@@ -1,0 +1,32 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "username": "testuser",
+      "password": "pbkdf2_sha256$260000$test$testhash",  // Not a real hash, replace with createsuperuser or loaddata
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "octofit_tracker.team",
+    "pk": 1,
+    "fields": {
+      "name": "Test Team",
+      "description": "A team for testing purposes."
+    }
+  },
+  {
+    "model": "octofit_tracker.activity",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "activity_type": "run",
+      "duration": 30,
+      "distance": 5.0,
+      "timestamp": "2026-02-21T10:00:00Z"
+    }
+  }
+]

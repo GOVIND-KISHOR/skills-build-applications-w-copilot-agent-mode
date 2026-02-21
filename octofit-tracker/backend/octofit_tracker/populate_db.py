@@ -1,51 +1,52 @@
-from django.test import TestCase
-from django.urls import reverse
-from rest_framework.test import APIClient
-from rest_framework import status
+
+import os
+import django
+import datetime
+
+# Setup Django environment
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'octofit_tracker.settings')
+django.setup()
+
 from .models import User, Team, Activity, Workout, Leaderboard
 
-class UserTests(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.user = User.objects.create_user(username='testuser', password='testpass')
+def populate():
+    # Create a user
+    user, created = User.objects.get_or_create(username='testuser')
+    if created:
+        user.set_password('testpass')
+        user.save()
+    print(f"User: {user.username}")
 
-    def test_user_creation(self):
-        self.assertEqual(User.objects.count(), 1)
+    # Create a team and add user
+    team, _ = Team.objects.get_or_create(name='Test Team')
+    team.members.add(user)
+    print(f"Team: {team.name}")
 
-class TeamTests(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.team = Team.objects.create(name='Test Team')
-        self.team.members.add(self.user)
+    # Create an activity
+    activity, _ = Activity.objects.get_or_create(
+        user=user,
+        activity_type='run',
+        duration=30,
+        calories_burned=200,
+        date=datetime.date(2024, 1, 1)
+    )
+    print(f"Activity: {activity.activity_type}")
 
-    def test_team_creation(self):
-        self.assertEqual(Team.objects.count(), 1)
+    # Create a workout
+    workout, _ = Workout.objects.get_or_create(
+        user=user,
+        name='Morning Workout',
+        description='Pushups',
+        date=datetime.date(2024, 1, 1)
+    )
+    print(f"Workout: {workout.name}")
 
-class ActivityTests(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.activity = Activity.objects.create(user=self.user, activity_type='run', duration=30, calories_burned=200, date='2024-01-01')
+    # Create a leaderboard
+    leaderboard, _ = Leaderboard.objects.get_or_create(
+        team=team,
+        total_points=100
+    )
+    print(f"Leaderboard for team: {leaderboard.team.name}")
 
-    def test_activity_creation(self):
-        self.assertEqual(Activity.objects.count(), 1)
-
-class WorkoutTests(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.workout = Workout.objects.create(user=self.user, name='Morning Workout', description='Pushups', date='2024-01-01')
-
-    def test_workout_creation(self):
-        self.assertEqual(Workout.objects.count(), 1)
-
-class LeaderboardTests(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.team = Team.objects.create(name='Test Team')
-        self.leaderboard = Leaderboard.objects.create(team=self.team, total_points=100)
-
-    def test_leaderboard_creation(self):
-        self.assertEqual(Leaderboard.objects.count(), 1)
+if __name__ == "__main__":
+    populate()
